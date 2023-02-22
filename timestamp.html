@@ -13,8 +13,23 @@
     <button onclick="formatTime()">转换</button>
     <label id="date"></label>
 
+	<br>
+
+	<label>时间：</label>
+    <input id="date2" value="2023-02-21 18:10:00"></input>
+    <button onclick="formatDate()">转换</button>
+    <label id="time2"></label>
+
 	<script>
 	 
+	 function formatDate(){
+            date = document.getElementById("date2").value
+            console.log(date)
+            timestampLabel = document.getElementById("time2")
+            
+            timestampLabel.innerText = getTimeStamp(date)
+        }
+
         function formatTime(){
             time = document.getElementById("time").value
             console.log(time)
@@ -22,6 +37,10 @@
             
             datelabel.innerText = getLocalTime(time)
         }
+
+		function getTimeStamp(date){
+			return Date.parse(date)
+		}
 
 		function getLocalTime(nS) {
             console.log("点击了：" + nS)
