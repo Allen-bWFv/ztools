@@ -3,11 +3,11 @@
 
 <head>
     <title>Draw features example</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
 
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
     <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
     <script
@@ -91,6 +91,13 @@
             }
             );
 
+            tianditu_label = new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url:"https://t3.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&scale=2&tk=17901572a8abca3a2022daa067f9f836",
+                })
+            }
+            );
+
             features.on("add", function (e) {
                 restoreDefaultColors();
                 features.forEach(toEPSG4326);
@@ -99,7 +106,7 @@
             });
 
             map = new ol.Map({
-                layers: [tianditu, vector],
+                layers: [tianditu,tianditu_label, vector],
                 target: 'map',
                 view: new ol.View({
                     center: [-11000000, 4600000],
