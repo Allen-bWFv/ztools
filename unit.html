@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Byte to MB</title>
+</head>
+
+<body>
+  <input type="byte" id="byte_input" value="1">
+  <label id="result"></label>
+  <br>
+  <br>
+  <button onclick="convertToMB()">Convert to MB</button>
+
+  <script>
+    function convertToMB() {
+      var byte_input = document.getElementById("byte_input").value;
+      var mb_value = byte_input / 1024 / 1024;
+      document.getElementById("result").innerHTML = mb_value;
+    }  
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>单位换算</title>
+
+
+</head>
+
+<body>
+    <input id="degree"></input>
+    <p>点击按钮转换成度分秒：</p>
+
+    <button onclick="convert()">转换</button>
+
+    <p id="demo"></p>
+
+    <script>
+        function convert() {
+            var lat = document.getElementById("degree").value; // 维度
+
+            var latDeg = Math.floor(lat); // 度数
+            var latMin = Math.floor((lat - latDeg) * 60); // 分钟
+            var latSec = ((lat - latDeg) * 3600 - latMin * 60).toFixed(2); // 秒数
+
+            var output = latDeg + "°" + latMin + "'" + latSec + "''" + "<br>" 
+
+            document.getElementById("demo").innerHTML = output;
+        }
+    </script>
+
+</body>
+
+</html>
