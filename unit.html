@@ -2,23 +2,93 @@
 <html>
 
 <head>
-  <title>Byte to MB</title>
+    <title>Unit Converter</title>
 </head>
 
 <body>
-  <input type="byte" id="byte_input" value="1">
-  <label id="result"></label>
-  <br>
-  <br>
-  <button onclick="convertToMB()">Convert to MB</button>
-
-  <script>
-    function convertToMB() {
-      var byte_input = document.getElementById("byte_input").value;
-      var mb_value = byte_input / 1024 / 1024;
-      document.getElementById("result").innerHTML = mb_value;
-    }  
-  </script>
+    <h1>Unit Converter</h1>
+    <form>
+        <label for="length">Length:</label>
+        <input type="number" id="length" name="length">
+        <select id="lengthUnit" name="lengthUnit">
+            <option value="m">meters</option>
+            <option value="km">kilometers</option>
+            <option value="mi">miles</option>
+            <option value="yd">yards</option>
+            <option value="ft">feet</option>
+            <option value="in">inches</option>
+            <option value="nmi">nautical miles</option>
+        </select>
+        <button type="button" onclick="convertLength()">Convert</button>
+        <p id="lengthResult"></p>
+    </form>
+    <script>
+        function convertLength() {
+            const length = document.getElementById("length").value;
+            const lengthUnit = document.getElementById("lengthUnit").value;
+            let result;
+            switch (lengthUnit) {
+                case "m":
+                    result = length + " meters is equal to:";
+                    result += "<br>" + (length / 1000) + " kilometers";
+                    result += "<br>" + (length / 1609.344) + " miles";
+                    result += "<br>" + (length * 1.0936) + " yards";
+                    result += "<br>" + (length * 3.2808) + " feet";
+                    result += "<br>" + (length * 39.370) + " inches";
+                    break;
+                case "km":
+                    result = length + " kilometers is equal to:";
+                    result += "<br>" + (length * 1000) + " meters";
+                    result += "<br>" + (length / 1.609) + " miles";
+                    result += "<br>" + (length * 1093.61) + " yards";
+                    result += "<br>" + (length * 3280.84) + " feet";
+                    result += "<br>" + (length * 39370.1) + " inches";
+                    break;
+                case "mi":
+                    result = length + " miles is equal to:";
+                    result += "<br>" + (length * 1609.344) + " meters";
+                    result += "<br>" + (length * 1.609) + " kilometers";
+                    result += "<br>" + (length * 1760) + " yards";
+                    result += "<br>" + (length * 5280) + " feet";
+                    result += "<br>" + (length * 63360) + " inches";
+                    break;
+                case "yd":
+                    result = length + " yards is equal to:";
+                    result += "<br>" + (length / 1.094) + " meters";
+                    result += "<br>" + (length / 1093.61) + " kilometers";
+                    result += "<br>" + (length / 1760) + " miles";
+                    result += "<br>" + (length * 3) + " feet";
+                    result += "<br>" + (length * 36) + " inches";
+                    break;
+                case "ft":
+                    result = length + " feet is equal to:";
+                    result += "<br>" + (length / 3.281) + " meters";
+                    result += "<br>" + (length / 3280.84) + " kilometers";
+                    result += "<br>" + (length / 5280) + " miles";
+                    result += "<br>" + (length / 3) + " yards";
+                    result += "<br>" + (length * 12) + " inches";
+                    break;
+                case "in":
+                    result = length + " inches is equal to:";
+                    result += "<br>" + (length / 39.37) + " meters";
+                    result += "<br>" + (length / 39370.1) + " kilometers";
+                    result += "<br>" + (length / 63360) + " miles";
+                    result += "<br>" + (length / 36) + " yards";
+                    result += "<br>" + (length / 12) + " feet";
+                    break;
+                case "nmi":
+                    result = length + " nautical miles is equal to:";
+                    result += "<br>" + (length * 1852) + " meters";
+                    result += "<br>" + (length * 1.852) + " kilometers";
+                    result += "<br>" + (length * 1.15078) + " miles";
+                    result += "<br>" + (length * 2025.37) + " yards";
+                    result += "<br>" + (length * 6076.12) + " feet";
+                    result += "<br>" + (length * 72913.4) + " inches";
+                    break;
+            }
+            document.getElementById("lengthResult").innerHTML = result;
+        }
+    </script>
 </body>
 
 </html>
