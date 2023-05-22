@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Client</title>
+</head>
+
+<body>
+    <h1>WebSocket Client</h1>
+    <label for="serverUrl">WebSocket Server URL:</label>
+    <input type="text" id="serverUrl" placeholder="ws://218.6.71.134:4050/ws?token=ships662" />
+    <button id="connectBtn">Connect</button>
+    <button id="disconnectBtn" disabled>Disconnect</button>
+    <div id="messageContainer"></div>
+    <script>
+        let socket;
+
+        const serverUrlInput = document.getElementById('serverUrl');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const messageContainer = document.getElementById('messageContainer');
+        connectBtn.addEventListener('click', () => {
+            // Create a WebSocket instance
+            const serverUrl = serverUrlInput.value;
+
+            // Create a WebSocket instance
+            socket = new WebSocket(serverUrl);
+
+            // Handle connection open event
+            socket.addEventListener('open', () => {
+                console.log('Connected to the server.');
+                // Send heartbeat every minute
+                setInterval(() => {
+                    socket.send('heartbeat');
+                }, 60000);
+                disconnectBtn.disabled = false;
+                connectBtn.disabled = true;
+            });
+
+            // Handle connection close event
+            socket.addEventListener('close', () => {
+                console.log('Connection closed.');
+                disconnectBtn.disabled = true;
+                connectBtn.disabled = false;
+            });
+
+            // Handle error event
+            socket.addEventListener('error', (error) => {
+                console.error('WebSocket error:', error);
+            });
+
+            // Handle incoming messages from the server
+            socket.addEventListener('message', (event) => {
+                const message = event.data;
+                console.log('Received message:', message);
+
+                // Prepend current time to the message
+                const currentTime = new Date().toLocaleTimeString();
+                const formattedMessage = `${currentTime}: ${message}`;
+
+                // Create a new <div> element for the message
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = formattedMessage;
+
+                // Append the <div> element to the message container
+                messageContainer.appendChild(messageDiv);
+            });
+        });
+
+        disconnectBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.close();
+                socket = null;
+            }
+        });
+    </script>
+</body>
+
+</html>
