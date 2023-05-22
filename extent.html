@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate WKT Polygon</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+  <form id="coordinatesForm">
+    <label for="bottomLeft">左下角坐标:</label>
+    <input type="text" id="bottomLeft" name="bottomLeft" placeholder="x,y" required><br><br>
+    <label for="topRight">右上角坐标:</label>
+    <input type="text" id="topRight" name="topRight" placeholder="x,y" required><br><br>
+    <button type="submit">生成 WKT</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    $(document).ready(function() {
+      $('#coordinatesForm').submit(function(event) {
+        event.preventDefault();
+        
+        // 获取左下角坐标和右上角坐标
+        var bottomLeft = $('#bottomLeft').val();
+        var topRight = $('#topRight').val();
+
+        // 解析坐标值
+        var blCoords = bottomLeft.split(',');
+        var trCoords = topRight.split(',');
+
+        // 构建多边形 WKT
+        var wkt = 'POLYGON((' +
+                  blCoords[0] + ' ' + blCoords[1] + ',' +
+                  trCoords[0] + ' ' + blCoords[1] + ',' +
+                  trCoords[0] + ' ' + trCoords[1] + ',' +
+                  blCoords[0] + ' ' + trCoords[1] + ',' +
+                  blCoords[0] + ' ' + blCoords[1] +
+                  '))';
+
+        // 显示结果
+        $('#result').text(wkt);
+      });
+    });
+  </script>
+</body>
+</html>
