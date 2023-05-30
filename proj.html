@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coordinate Conversion</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.4/proj4.js"></script>
+</head>
+<body>
+    <h1>Coordinate Conversion</h1>
+
+    <p>EPSG:4326 (WGS84) to EPSG:3857 (Web Mercator)</p>
+    <input type="text" id="lat" placeholder="Latitude">
+    <input type="text" id="lon" placeholder="Longitude">
+    <button onclick="convertToMercator()">Convert</button>
+    <p id="mercator"></p>
+
+    <p>EPSG:3857 (Web Mercator) to EPSG:4326 (WGS84)</p>
+    <input type="text" id="x" placeholder="X">
+    <input type="text" id="y" placeholder="Y">
+    <button onclick="convertToWGS84()">Convert</button>
+    <p id="wgs84"></p>
+
+    <script>
+        function convertToMercator() {
+            var lon = parseFloat(document.getElementById('lon').value);
+            var lat = parseFloat(document.getElementById('lat').value);
+
+            var fromProjection = proj4.defs('EPSG:4326');
+            var toProjection = proj4.defs('EPSG:3857');
+            console.log([lon, lat])
+            var point = proj4(fromProjection, toProjection, [lon, lat]);
+            console.log(point)
+            document.getElementById('mercator').innerText = 'X: ' + point[0] + ', Y: ' + point[1];
+        }
+
+        function convertToWGS84() {
+            var x = parseFloat(document.getElementById('x').value);
+            var y = parseFloat(document.getElementById('y').value);
+
+            var fromProjection = proj4.defs('EPSG:3857');
+            var toProjection = proj4.defs('EPSG:4326');
+
+            var point = proj4(fromProjection, toProjection, [x, y]);
+
+            document.getElementById('wgs84').innerText = 'Latitude: ' + point[1] + ', Longitude: ' + point[0];
+        }
+    </script>
+</body>
+</html>
