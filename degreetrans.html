@@ -16,6 +16,13 @@
 
     <p id="demo"></p>
 
+    <p>
+        <label for="degreesInput">Degrees:</label>
+        <input type="text" id="degreesInput">
+        <button onclick="convertDegrees()">Convert</button>
+    </p>
+    <p>点击按钮转换成度：</p>
+    <p id="conversion"></p>
     <script>
         function convert() {
             var lat = document.getElementById("degree").value; // 维度
@@ -24,9 +31,25 @@
             var latMin = Math.floor((lat - latDeg) * 60); // 分钟
             var latSec = ((lat - latDeg) * 3600 - latMin * 60).toFixed(2); // 秒数
 
-            var output = latDeg + "°" + latMin + "'" + latSec + "''" + "<br>" 
+            var output = latDeg + "°" + latMin + "'" + latSec + "''" + "<br>"
 
             document.getElementById("demo").innerHTML = output;
+        }
+
+
+        function convertDegrees() {
+            var degreesInput = document.getElementById("degreesInput");
+            var degrees = degreesInput.value.trim();
+
+            var degreeParts = degrees.split("°");
+            var degreesValue = parseFloat(degreeParts[0]);
+            var minuteParts = degreeParts[1].split("'");
+            var minutesValue = parseFloat(minuteParts[0]);
+
+            var decimalDegrees = degreesValue + minutesValue / 60;
+
+            var conversionElement = document.getElementById("conversion");
+            conversionElement.innerHTML = "Decimal Degrees: " + decimalDegrees;
         }
     </script>
 
