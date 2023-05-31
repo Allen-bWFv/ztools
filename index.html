@@ -1,11 +1,105 @@
-<a href="./timestamp.html">时间戳转换</a>
+<!DOCTYPE html>
+<html>
 
-<a href="./wkt.html">wkt展示</a>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f2f2;
+            font-family: Arial, sans-serif;
+        }
 
-<a href="./degreetrans.html">度转度分秒</a>
+        .icon-link {
+            display: inline-block;
+            margin-right: 10px;
+            color: #333;
+            text-decoration: none;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-<a href="./extent.html">左下右上转POLYGON</a>
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin-bottom: 20px;
+            z-index: 999;
+        }
 
-<a href="./tilespider.html">瓦片爬虫范围</a>
+        .search-bar input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 14px;
+            width: 300px;
+            transition: width 0.3s ease-in-out;
+        }
 
-<a href="./websocket.html">websocket测试</a>
+        .search-bar input[type="text"]:focus {
+            width: 400px;
+        }
+
+        .search-bar label {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #888;
+            font-size: 14px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .search-bar input[type="text"]:focus+label,
+        .search-bar input[type="text"]:not(:placeholder-shown)+label {
+            top: 0;
+            left: 12px;
+            transform: translateY(0) scale(0.8);
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <label for="searchInput"></label>
+    </div>
+
+    <a href="./timestamp.html" class="icon-link"><i class="fas fa-clock"></i> 时间戳转换</a>
+    <a href="./wkt.html" class="icon-link"><i class="fas fa-file-alt"></i> wkt展示</a>
+    <a href="./degreetrans.html" class="icon-link"><i class="fas fa-compass"></i> 度转度分秒</a>
+    <a href="./extent.html" class="icon-link"><i class="fas fa-map"></i> 左下右上转POLYGON</a>
+    <a href="./tilespider.html" class="icon-link"><i class="fas fa-spider"></i> 瓦片爬虫范围</a>
+    <a href="./websocket.html" class="icon-link"><i class="fas fa-broadcast-tower"></i> websocket测试</a>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const iconLinks = document.querySelectorAll('.icon-link');
+
+        searchInput.addEventListener('input', function () {
+            const searchValue = searchInput.value.trim().toLowerCase();
+
+            iconLinks.forEach(function (iconLink) {
+                const linkText = iconLink.innerText.toLowerCase();
+                if (linkText.includes(searchValue)) {
+                    iconLink.style.display = 'inline-block';
+                } else {
+                    iconLink.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
