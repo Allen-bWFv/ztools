@@ -43,10 +43,18 @@
 
             var degreeParts = degrees.split("°");
             var degreesValue = parseFloat(degreeParts[0]);
+
             var minuteParts = degreeParts[1].split("'");
             var minutesValue = parseFloat(minuteParts[0]);
 
-            var decimalDegrees = degreesValue + minutesValue / 60;
+            var secondsValue = 0;
+            if (minuteParts[1]) {
+                var secondParts = minuteParts[1].split('"');
+                secondsValue = parseFloat(secondParts[0]);
+            }
+
+
+            var decimalDegrees = degreesValue + (minutesValue / 60) + (secondsValue / 3600);
 
             var conversionElement = document.getElementById("conversion");
             conversionElement.innerHTML = "Decimal Degrees: " + decimalDegrees;
