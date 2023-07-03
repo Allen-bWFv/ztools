@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Polygon WKT</title>
+  <script>
+    function getMinMaxCoordinates() {
+      var wkt = document.getElementById("polygonInput").value.trim();
+      
+      // Check if the input is empty
+      if (wkt === "") {
+        alert("Please enter a polygon in WKT format.");
+        return;
+      }
+      
+      // Remove the 'POLYGON' prefix and parentheses
+      var polygonCoordinates = wkt.replace("POLYGON((", "").replace("))", "");
+      
+      // Split the coordinates into individual pairs
+      var coordinatePairs = polygonCoordinates.split(",");
+      
+      // Initialize min and max values
+      var minLatitude = Infinity;
+      var maxLatitude = -Infinity;
+      var minLongitude = Infinity;
+      var maxLongitude = -Infinity;
+      
+      // Iterate over each coordinate pair
+      for (var i = 0; i < coordinatePairs.length; i++) {
+        var coordinatePair = coordinatePairs[i].trim().split(" ");
+        var latitude = parseFloat(coordinatePair[1]);
+        var longitude = parseFloat(coordinatePair[0]);
+        
+        // Update min and max values
+        minLatitude = Math.min(minLatitude, latitude);
+        maxLatitude = Math.max(maxLatitude, latitude);
+        minLongitude = Math.min(minLongitude, longitude);
+        maxLongitude = Math.max(maxLongitude, longitude);
+      }
+      
+      // Output the results
+      document.getElementById("minLatitude").textContent = minLatitude;
+      document.getElementById("maxLatitude").textContent = maxLatitude;
+      document.getElementById("minLongitude").textContent = minLongitude;
+      document.getElementById("maxLongitude").textContent = maxLongitude;
+    }
+  </script>
+</head>
+<body>
+  <input type="text" id="polygonInput" placeholder="Enter the polygon in WKT format">
+  <button onclick="getMinMaxCoordinates()">Get Min/Max Coordinates</button>
+  <br><br>
+  <strong>Minimum Latitude:</strong> <span id="minLatitude"></span><br>
+  <strong>Maximum Latitude:</strong> <span id="maxLatitude"></span><br>
+  <strong>Minimum Longitude:</strong> <span id="minLongitude"></span><br>
+  <strong>Maximum Longitude:</strong> <span id="maxLongitude"></span><br>
+</body>
+</html>

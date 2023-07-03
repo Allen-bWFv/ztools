@@ -15,6 +15,7 @@
     <button onclick="convert()">转换</button>
 
     <p id="demo"></p>
+    <p id="demo2"></p>
 
     <p>
         <label for="degreesInput">Degrees:</label>
@@ -30,10 +31,13 @@
             var latDeg = Math.floor(lat); // 度数
             var latMin = Math.floor((lat - latDeg) * 60); // 分钟
             var latSec = ((lat - latDeg) * 3600 - latMin * 60).toFixed(2); // 秒数
-
+            var latMin2 = (lat - latDeg) * 60; // 分钟
             var output = latDeg + "°" + latMin + "'" + latSec + "''" + "<br>"
 
+            var output2 = latDeg + "°" + latMin2 + "'" + "<br>"
+
             document.getElementById("demo").innerHTML = output;
+            document.getElementById("demo2").innerHTML = output2;
         }
 
 
