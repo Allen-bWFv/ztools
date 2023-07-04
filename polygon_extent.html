@@ -1,6 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 300px;
+      height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
   <title>Polygon WKT</title>
   <script>
     function getMinMaxCoordinates() {
@@ -46,7 +82,7 @@
   </script>
 </head>
 <body>
-  <input type="text" id="polygonInput" placeholder="Enter the polygon in WKT format">
+  <textarea type="text" id="polygonInput" placeholder="Enter the polygon in WKT format"></textarea><br>
   <button onclick="getMinMaxCoordinates()">Get Min/Max Coordinates</button>
   <br><br>
   <strong>Minimum Latitude:</strong> <span id="minLatitude"></span><br>
