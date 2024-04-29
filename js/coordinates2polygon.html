@@ -8,7 +8,8 @@
 
     function convertToWKT() {
         var pointSequence = document.getElementById("pointSequence").value.trim();
-        if (pointSequence.includes('°')){
+        pointSequence = convertFullWidthToHalfWidth(pointSequence);
+        if (pointSequence.includes('°') || pointSequence.includes('º')){
             convertToWKT1()
         }else{
             convertToWKT2()
@@ -19,14 +20,18 @@
     function convertToWKT1() {
         // 获取文本框中的点序列数据
         var pointSequence = document.getElementById("pointSequence").value.trim();
-        
+        pointSequence = convertFullWidthToHalfWidth(pointSequence);
+        console.log(pointSequence)
         // 分割点序列数据为单个点的数组
-        var points = pointSequence.split(";\n");
+        var points = pointSequence.split(";");
         
         // 构建WKT格式的面数据
         var wktPolygon = "POLYGON((";
         for (var i = 0; i < points.length; i++) {
             var point = points[i].split(",");
+            if (point.length < 2){
+                continue;
+            }
             var lon = parseDMS(point[0].trim());
             var lat = parseDMS(point[1].trim());
             if (isNaN(lon) || isNaN(lat)) {
@@ -56,6 +61,11 @@
         var wktPolygon = "POLYGON((";
         for (var i = 0; i < points.length; i++) {
             var point = points[i].split(",");
+            if (point.length < 2){
+                continue;
+            }
+                
+            console.log(point)
             var lon = parseFloat(point[0].trim());
             var lat = parseFloat(point[1].trim());
             if (isNaN(lon) || isNaN(lat)) {
@@ -90,6 +100,14 @@
         
         return degrees + minutes / 60 + seconds / 3600;
     }
+
+    function convertFullWidthToHalfWidth(str) {
+    // 全角字符编码范围：65281 - 65374
+    // 半角字符编码范围：33 - 126
+    return str.replace(/[\uff01-\uff5e]/g, function(char) {
+        return String.fromCharCode(char.charCodeAt(0) - 65248);
+    });
+}
 </script>
 </head>
 <body>
