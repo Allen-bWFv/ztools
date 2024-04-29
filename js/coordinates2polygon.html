@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点序列转换为WKT格式</title>
+<script>
+
+    function convertToWKT() {
+        var pointSequence = document.getElementById("pointSequence").value.trim();
+        if (pointSequence.includes('°')){
+            convertToWKT1()
+        }else{
+            convertToWKT2()
+        }
+    }
+
+
+    function convertToWKT1() {
+        // 获取文本框中的点序列数据
+        var pointSequence = document.getElementById("pointSequence").value.trim();
+        
+        // 分割点序列数据为单个点的数组
+        var points = pointSequence.split(";\n");
+        
+        // 构建WKT格式的面数据
+        var wktPolygon = "POLYGON((";
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i].split(",");
+            var lon = parseDMS(point[0].trim());
+            var lat = parseDMS(point[1].trim());
+            if (isNaN(lon) || isNaN(lat)) {
+                alert("第 " + (i+1) + " 个点的坐标格式不正确！");
+                return;
+            }
+            wktPolygon += lon + " " + lat;
+            if (i !== points.length - 1) {
+                wktPolygon += ",";
+            }
+        }
+        wktPolygon += "))";
+
+        // 显示转换结果
+        document.getElementById("result").innerText = wktPolygon;
+    }
+
+
+    function convertToWKT2() {
+         // 获取文本框中的点序列数据
+        var pointSequence = document.getElementById("pointSequence").value.trim();
+        
+        // 分割点序列数据为单个点的数组
+        var points = pointSequence.split(";");
+        
+        // 构建WKT格式的面数据
+        var wktPolygon = "POLYGON((";
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i].split(",");
+            var lon = parseFloat(point[0].trim());
+            var lat = parseFloat(point[1].trim());
+            if (isNaN(lon) || isNaN(lat)) {
+                alert("第 " + (i+1) + " 个点的坐标格式不正确！");
+                return;
+            }
+            wktPolygon += lon + " " + lat;
+            if (i !== points.length - 1) {
+                wktPolygon += ",";
+            }
+        }
+        wktPolygon += "))";
+
+        // 显示转换结果
+        document.getElementById("result").innerText = wktPolygon;
+    }
+
+    // 将度分秒格式的坐标转换为浮点数
+    function parseDMS(dms) {
+        var parts = dms.split(/[^\d\w.]+/);
+        var degrees = parseFloat(parts[0]);
+        var minutes = parseFloat(parts[1]);
+        var seconds = parseFloat(parts[2]);
+        
+        // 检查数据是否合法
+        if (isNaN(degrees) || isNaN(minutes) || isNaN(seconds)) {
+            return NaN;
+        }
+        if (minutes >= 60 || seconds >= 60) {
+            return NaN;
+        }
+        
+        return degrees + minutes / 60 + seconds / 3600;
+    }
+</script>
+</head>
+<body>
+<h2>点序列转换为WKT格式</h2>
+<p>请输入点序列，每个点用半角分号分隔：</p>
+<textarea id="pointSequence" rows="5" cols="50" placeholder="例如：117°44'11.40",30°53'27.25";&#10;117°44'21.21",30°53'24.56";&#10;117°44'37.35",30°54'07.82";&#10;117°44'23.94",30°54'11.56";"></textarea>
+<br>
+<button onclick="convertToWKT()">转换</button>
+<br>
+<p>转换结果：</p>
+<pre id="result"></pre>
+</body>
+</html>
