@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coordinate Transformation</title>
+<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/proj4js/2.7.5/proj4.js"></script>
+<script>
+proj4.defs("EPSG:4479","+proj=geocent +ellps=GRS80 +units=m +no_defs +type=crs");
+proj4.defs("EPSG:2385","+proj=tmerc +lat_0=0 +lon_0=120 +k=1 +x_0=500000 +y_0=0 +ellps=IAU76 +units=m +no_defs +type=crs");
+function convertCoordinates() {
+    // 获取用户输入的原始坐标和选择的输入、输出坐标系
+    var inputX = parseFloat(document.getElementById("inputX").value);
+    var inputY = parseFloat(document.getElementById("inputY").value);
+    var inputProjection = document.getElementById("inputProjection").value;
+    var outputProjection = document.getElementById("outputProjection").value;
+
+    // 定义输入、输出坐标系的 Proj4js 定义
+    var inputProj = proj4.defs(inputProjection);
+    let outputProj = proj4.defs(outputProjection);
+
+    // 将输入坐标转换为 Proj4js 格式
+    var inputCoords = proj4(inputProj, outputProj, [inputX, inputY]);
+    console.log("转换结果---",inputCoords)
+    // 显示转换后的坐标
+    document.getElementById("outputX").innerText = inputCoords[0].toFixed(6);
+    document.getElementById("outputY").innerText = inputCoords[1].toFixed(6);
+}
+</script>
+</head>
+<body>
+<h2>Coordinate Transformation</h2>
+<p>Choose input and output coordinate systems:</p>
+<label for="inputProjection">Input Projection:</label>
+<select id="inputProjection">
+    <option value="EPSG:4326">EPSG:4326</option>
+    <option value="EPSG:3857">EPSG:3857</option>
+    <option value="EPSG:4479">EPSG:4479</option>
+    <option value="EPSG:4490">EPSG:4490</option>
+    <option value="EPSG:2385">EPSG:2385</option>
+    <!-- 添加其他常见的坐标系选项 -->
+</select><br><br>
+
+<label for="outputProjection">Output Projection:</label>
+<select id="outputProjection">
+    <option value="EPSG:4326">EPSG:4326</option>
+    <option value="EPSG:3857">EPSG:3857</option>
+    <option value="EPSG:4479">EPSG:4479</option>
+    <option value="EPSG:4490">EPSG:4490</option>
+    <option value="EPSG:2385">EPSG:2385</option>
+    <!-- 添加其他常见的坐标系选项 -->
+</select><br><br>
+
+<p>Enter input coordinates:</p>
+<label for="inputX">Input X:</label>
+<input type="number" id="inputX"><br><br>
+<label for="inputY">Input Y:</label>
+<input type="number" id="inputY"><br><br>
+
+<button onclick="convertCoordinates()">Convert</button>
+
+<p>Output coordinates:</p>
+<label for="outputX">Output X:</label>
+<span id="outputX"></span><br><br>
+<label for="outputY">Output Y:</label>
+<span id="outputY"></span><br><br>
+</body>
+</html>
