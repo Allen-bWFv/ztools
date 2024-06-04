@@ -24,6 +24,9 @@
         console.log(pointSequence)
         // 分割点序列数据为单个点的数组
         var points = pointSequence.split(";");
+        if (!pointSequence.includes(';') && pointSequence.includes('\n')){
+            points = pointSequence.split("\n");
+        }
         
         // 构建WKT格式的面数据
         var wktPolygon = "POLYGON((";
@@ -53,10 +56,13 @@
     function convertToWKT2() {
          // 获取文本框中的点序列数据
         var pointSequence = document.getElementById("pointSequence").value.trim();
-        
+        pointSequence = convertFullWidthToHalfWidth(pointSequence);
         // 分割点序列数据为单个点的数组
         var points = pointSequence.split(";");
-        
+        console.log(points)
+        if (pointSequence.includes('\n')){
+            points = pointSequence.split("\n");
+        }
         // 构建WKT格式的面数据
         var wktPolygon = "POLYGON((";
         for (var i = 0; i < points.length; i++) {
