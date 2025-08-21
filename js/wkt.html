@@ -24,6 +24,8 @@
         var features = new ol.Collection();
         var format = new ol.format.WKT();
         var current_shape = "point";
+        var currentCrs = 'EPSG:4326';   // 初始默认
+
 
         var fill = new ol.style.Fill({
             color: 'rgba(210, 122, 167,0.2)'
@@ -192,6 +194,86 @@
             var wkt = window.location.hash.slice(1);
             document.getElementById("wktStringTextArea").value = decodeURI(wkt);
         }
+
+        /**
+         * 读取 textarea 中的 WKT（EPSG:4326），
+         * 转换成 EPSG:3857 后重新写回 textarea 并刷新地图
+         */
+        function transformTo3857() {
+            var wkt = document.getElementById('wktStringTextArea').value.trim();
+            if (!wkt) { return; }
+
+            try {
+                // 1) 解析 WKT（默认视为 4326）
+                var features = format.readFeatures(wkt, {
+                    dataProjection: 'EPSG:4326',
+                    featureProjection: 'EPSG:4326'
+                });
+
+                // 2) 逐个要素转换到 3857
+                features.forEach(function (f) {
+                    f.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+                });
+
+                // 3) 重新写回 textarea
+                var newWKT = format.writeFeatures(features, {
+                    dataProjection: 'EPSG:3857',
+                    featureProjection: 'EPSG:3857',
+                    rightHanded: true
+                });
+                document.getElementById('wktStringTextArea').value = newWKT;
+
+                // 4) 刷新地图
+                // plotWKT();
+            } catch (e) {
+                alert('转换失败：' + e.message);
+            }
+        }
+
+         /**
+         * 按钮点击：4326↔3857 来回切换
+         */
+        function toggleCrs() {
+            var txtArea = document.getElementById('wktStringTextArea');
+            var wkt = txtArea.value.trim();
+            if (!wkt) { return; }
+
+            try {
+                // 1) 用当前坐标系解析
+                var features = format.readFeatures(wkt, {
+                    dataProjection: currentCrs,
+                    featureProjection: currentCrs
+                });
+
+                // 2) 决定目标坐标系
+                var targetCrs = (currentCrs === 'EPSG:4326') ? 'EPSG:3857' : 'EPSG:4326';
+
+                // 3) 逐个要素转换
+                features.forEach(function (f) {
+                    f.getGeometry().transform(currentCrs, targetCrs);
+                });
+
+                // 4) 写回 textarea
+                var newWKT = format.writeFeatures(features, {
+                    dataProjection: targetCrs,
+                    featureProjection: targetCrs,
+                    rightHanded: true
+                });
+                txtArea.value = newWKT;
+
+                // 5) 更新状态 + 按钮文字
+                currentCrs = targetCrs;
+                var btn = document.getElementById('toggleCrsBtn');
+                btn.textContent = (currentCrs === 'EPSG:4326')
+                                ? 'To EPSG:3857'
+                                : 'To EPSG:4326';
+
+                // 6) 刷新地图
+                // plotWKT();
+            } catch (e) {
+                alert('切换失败：' + e.message);
+            }
+        }
     </script>
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
@@ -263,6 +345,8 @@
             <div class="btn-group btn-group-md" style="padding: 10px; position: absolute; right:0px">
                 <button type="button" class="btn btn-primary" onclick="clearMap()">Clear</button>
                 <button type="button" class="btn btn-primary" onclick="plotWKT()">Plot Shape</button>
+                <!-- 切换按钮 -->
+                <button id="toggleCrsBtn" type="button" class="btn btn-success" onclick="toggleCrs()">To EPSG:3857</button>
             </div>
         </div>
     </div>
