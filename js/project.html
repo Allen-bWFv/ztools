@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coordinate Transformation</title>
-<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/proj4js/2.7.5/proj4.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/proj4js/2.19.10/proj4-src.js"></script>
 <script>
 proj4.defs("EPSG:4479","+proj=geocent +ellps=GRS80 +units=m +no_defs +type=crs");
+proj4.defs("EPSG:4490","+proj=longlat +ellps=GRS80 +no_defs +type=crs");
 proj4.defs("EPSG:2385","+proj=tmerc +lat_0=0 +lon_0=120 +k=1 +x_0=500000 +y_0=0 +ellps=IAU76 +units=m +no_defs +type=crs");
 function convertCoordinates() {
     // 获取用户输入的原始坐标和选择的输入、输出坐标系
