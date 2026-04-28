@@ -1,108 +1,206 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZTools 工具导航</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f2f2f2;
-            font-family: Arial, sans-serif;
+        :root {
+            --bg-start: #edf2ff;
+            --bg-end: #f6f8fb;
+            --primary: #3f6ad8;
+            --primary-soft: #ebf1ff;
+            --text-main: #1f2a44;
+            --text-sub: #5f6e8a;
+            --card-border: #e5e9f5;
+            --shadow: 0 10px 30px rgba(31, 42, 68, 0.08);
+            --shadow-hover: 0 14px 35px rgba(63, 106, 216, 0.18);
         }
 
-        .icon-link {
-            display: inline-block;
-            margin-right: 10px;
-            color: #333;
-            text-decoration: none;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text-main);
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            padding: 40px 18px;
+        }
+
+        .container {
+            width: min(1080px, 100%);
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(6px);
+            padding: 28px 24px;
+        }
+
+        .header {
+            margin-bottom: 22px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .subtitle {
+            margin: 10px 0 0;
+            color: var(--text-sub);
+            font-size: 14px;
         }
 
         .search-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative;
             margin-bottom: 20px;
-            z-index: 999;
         }
 
         .search-bar input[type="text"] {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 24px;
+            width: 100%;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background-color: #fff;
+            padding: 12px 14px 12px 40px;
             font-size: 14px;
-            width: 300px;
-            transition: width 0.3s ease-in-out;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .search-bar input[type="text"]:focus {
-            width: 400px;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(63, 106, 216, 0.15);
         }
 
-        .search-bar label {
+        .search-icon {
             position: absolute;
+            left: 14px;
             top: 50%;
-            left: 12px;
             transform: translateY(-50%);
-            pointer-events: none;
-            color: #888;
+            color: var(--text-sub);
             font-size: 14px;
-            transition: all 0.3s ease-in-out;
         }
 
-        .search-bar input[type="text"]:focus+label,
-        .search-bar input[type="text"]:not(:placeholder-shown)+label {
-            top: 0;
-            left: 12px;
-            transform: translateY(0) scale(0.8);
-            color: #333;
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .icon-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .icon-link i {
+            width: 18px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .icon-link:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            background-color: var(--primary-soft);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .empty-tip {
+            display: none;
+            margin-top: 14px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-sub);
+            padding: 10px;
+            border: 1px dashed var(--card-border);
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .container {
+                padding: 20px 14px;
+                border-radius: 14px;
+            }
+
+            .title {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search...">
-        <label for="searchInput"></label>
-    </div>
+    <main class="container">
+        <header class="header">
+            <h1 class="title">ZTools 工具导航</h1>
+            <p class="subtitle">常用地理与数据处理小工具，支持关键词快速筛选。</p>
+        </header>
 
-    <a href="./js/timestamp.html" class="icon-link"><i class="fas fa-clock"></i> 时间戳转换</a>
-    <a href="./js/wkt.html" class="icon-link"><i class="fas fa-file-alt"></i> wkt展示</a>
-    <a href="./js/project.html" class="icon-link"><i class="fas fa-map"></i> 投影转换</a>
-    <a href="./js/kml.html" class="icon-link"><i class="fas fa-file-alt"></i> kml展示</a>
-    <a href="./js/degreetrans.html" class="icon-link"><i class="fas fa-compass"></i> 度转度分秒</a>
-    <a href="./js/extent.html" class="icon-link"><i class="fas fa-map"></i> 左下右上转POLYGON</a>
-    <a href="./js/tilespider.html" class="icon-link"><i class="fas fa-spider"></i> 瓦片爬虫范围</a>
-    <a href="./js/websocket.html" class="icon-link"><i class="fas fa-broadcast-tower"></i> websocket测试</a>
-    <a href="./js/polygon_extent.html" class="icon-link"><i class="fas fa-draw-polygon"></i> 多边形四至</a>
-    <a href="./js/waterArea.html" class="icon-link"><i class="fas fa-water"></i> 一二级水域格式转换</a>
-    <a href="./js/olsnap.html" class="icon-link"><i class="fa-regular fa-images"></i> 地图截图</a>
-    <a href="./js/coordinates2polygon.html" class="icon-link"><i class="fas fa-map"></i> 点序列转面wkt</a>
+        <div class="search-bar">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="输入关键词搜索工具，如：wkt、投影、水域">
+        </div>
+
+        <section class="tool-grid" id="toolGrid">
+            <a href="./js/timestamp.html" class="icon-link"><i class="fas fa-clock"></i> 时间戳转换</a>
+            <a href="./js/wkt.html" class="icon-link"><i class="fas fa-file-alt"></i> wkt展示</a>
+            <a href="./js/project.html" class="icon-link"><i class="fas fa-map"></i> 投影转换</a>
+            <a href="./js/kml.html" class="icon-link"><i class="fas fa-file-alt"></i> kml展示</a>
+            <a href="./js/degreetrans.html" class="icon-link"><i class="fas fa-compass"></i> 度转度分秒</a>
+            <a href="./js/extent.html" class="icon-link"><i class="fas fa-map"></i> 左下右上转POLYGON</a>
+            <a href="./js/tilespider.html" class="icon-link"><i class="fas fa-spider"></i> 瓦片爬虫范围</a>
+            <a href="./js/websocket.html" class="icon-link"><i class="fas fa-broadcast-tower"></i> websocket测试</a>
+            <a href="./js/polygon_extent.html" class="icon-link"><i class="fas fa-draw-polygon"></i> 多边形四至</a>
+            <a href="./js/waterArea.html" class="icon-link"><i class="fas fa-water"></i> 一二级水域格式转换</a>
+            <a href="./js/olsnap.html" class="icon-link"><i class="fa-regular fa-images"></i> 地图截图</a>
+            <a href="./js/coordinates2polygon.html" class="icon-link"><i class="fas fa-map"></i> 点序列转面wkt</a>
+        </section>
+        <div class="empty-tip" id="emptyTip">未找到匹配工具，请尝试其他关键词。</div>
+    </main>
+
     <script>
         const searchInput = document.getElementById('searchInput');
         const iconLinks = document.querySelectorAll('.icon-link');
+        const emptyTip = document.getElementById('emptyTip');
 
         searchInput.addEventListener('input', function () {
             const searchValue = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
 
             iconLinks.forEach(function (iconLink) {
                 const linkText = iconLink.innerText.toLowerCase();
                 if (linkText.includes(searchValue)) {
-                    iconLink.style.display = 'inline-block';
+                    iconLink.style.display = 'flex';
+                    visibleCount += 1;
                 } else {
                     iconLink.style.display = 'none';
                 }
             });
+
+            emptyTip.style.display = visibleCount === 0 ? 'block' : 'none';
         });
     </script>
 </body>
