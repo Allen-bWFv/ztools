@@ -54,9 +54,7 @@
             draw.on('drawend', function(e) {
                 // 等待 feature 被添加到 collection 后再触发 add 事件
                 setTimeout(function() {
-                    features.forEach(toEPSG4326);
-                    document.getElementById('wktStringTextArea').value = format.writeFeatures(features.getArray(), { rightHanded: true });
-                    features.forEach(toEPSG3857);
+                    updateWKT();
                 }, 0);
             });
             map.addInteraction(draw);
@@ -96,9 +94,7 @@
                 
                 // 监听修改事件，实时更新 WKT
                 modify.on('modifyend', function(e) {
-                    features.forEach(toEPSG4326);
-                    document.getElementById('wktStringTextArea').value = format.writeFeatures(features.getArray(), { rightHanded: true });
-                    features.forEach(toEPSG3857);
+                    updateWKT();
                 });
                 
                 map.addInteraction(modify);
@@ -116,12 +112,89 @@
             });
         }
 
+        function getCoordDepth(type) {
+            switch(type) {
+                case 'Point': return 0;
+                case 'LineString': return 1;
+                case 'Polygon': return 2;
+                case 'MultiPoint': return 1;
+                case 'MultiLineString': return 2;
+                case 'MultiPolygon': return 3;
+                default: return 0;
+            }
+        }
+
+        function collectLongitudes(coords, depth) {
+            var lons = [];
+            if (depth === 0) {
+                lons.push(coords[0]);
+            } else {
+                for (var i = 0; i < coords.length; i++) {
+                    lons = lons.concat(collectLongitudes(coords[i], depth - 1));
+                }
+            }
+            return lons;
+        }
+
+        function adjustLongitudes(coords, depth, fn) {
+            if (depth === 0) {
+                coords[0] = fn(coords[0]);
+            } else {
+                for (var i = 0; i < coords.length; i++) {
+                    adjustLongitudes(coords[i], depth - 1, fn);
+                }
+            }
+        }
+
+        function normalizeLon(lon) {
+            while (lon > 180) lon -= 360;
+            while (lon < -180) lon += 360;
+            return lon;
+        }
+
+        // 将 features 转为 4326 后写出 WKT，再转回 3857
+        // 对跨日期变更线的图形，保持经度连续（允许 >180）；对普通图形归一化到 [-180,180]
+        function updateWKT() {
+            features.forEach(toEPSG4326);
+
+            var adjustedFeatures = features.getArray().map(function(f) {
+                var clone = f.clone();
+                var geom = clone.getGeometry();
+                var type = geom.getType();
+                var coords = geom.getCoordinates();
+                var depth = getCoordDepth(type);
+
+                var lons = collectLongitudes(coords, depth);
+                if (lons.length > 0) {
+                    var minLon = Math.min.apply(null, lons);
+                    var maxLon = Math.max.apply(null, lons);
+
+                    if (maxLon - minLon > 180) {
+                        // 跨日期变更线：将负经度 +360 保持连续
+                        // 如 -170 → 190，这样多边形不会绕远路
+                        adjustLongitudes(coords, depth, function(lon) {
+                            return lon < 0 ? lon + 360 : lon;
+                        });
+                    } else {
+                        // 普通图形：归一化到 [-180, 180]
+                        adjustLongitudes(coords, depth, normalizeLon);
+                    }
+                    geom.setCoordinates(coords);
+                }
+                return clone;
+            });
+
+            document.getElementById('wktStringTextArea').value =
+                format.writeFeatures(adjustedFeatures, { rightHanded: true });
+            features.forEach(toEPSG3857);
+        }
+
         function toEPSG4326(element, index, array) {
-            element = element.getGeometry().transform('EPSG:3857', 'EPSG:4326');
+            element.getGeometry().transform('EPSG:3857', 'EPSG:4326');
         }
 
         function toEPSG3857(element, index, array) {
-            element = element.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+            element.getGeometry().transform('EPSG:4326', 'EPSG:3857');
         }
 
         function selectGeom(shape) {
@@ -156,9 +229,7 @@
 
             features.on("add", function (e) {
                 restoreDefaultColors();
-                features.forEach(toEPSG4326);
-                document.getElementById('wktStringTextArea').value = format.writeFeatures(features.getArray(), { rightHanded: true });
-                features.forEach(toEPSG3857);
+                updateWKT();
             });
 
             map = new ol.Map({
@@ -229,9 +300,7 @@
                     features: features
                 });
                 modify.on('modifyend', function(e) {
-                    features.forEach(toEPSG4326);
-                    document.getElementById('wktStringTextArea').value = format.writeFeatures(features.getArray(), { rightHanded: true });
-                    features.forEach(toEPSG3857);
+                    updateWKT();
                 });
                 map.addInteraction(modify);
             }
