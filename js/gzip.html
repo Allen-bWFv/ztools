@@ -308,17 +308,6 @@
             }
         }
 
-        function isGzip(bytes) {
-            return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
-        }
-
-        // zlib 头：CMF 低 4 位为 8（deflate），且 (CMF*256+FLG) 能被 31 整除
-        function isZlibHeader(bytes) {
-            return bytes.length >= 2 &&
-                (bytes[0] & 0x0f) === 8 &&
-                (((bytes[0] << 8) | bytes[1]) % 31) === 0;
-        }
-
         // 调用一种 pako 解压方式，失败返回 null
         function tryInflate(method, bytes) {
             try {
@@ -342,45 +331,32 @@
                 throw new Error(E_BASE64);
             }
 
+            // 依次尝试 gzip / zlib / raw deflate；成功要求既能解压、输出又是合法 UTF-8。
+            // 不按魔数硬路由：普通文本（如 "8080"）前两字节可能恰好满足 zlib 头校验，
+            // 硬路由会导致 pako.inflate 抛错后无法回退到「仅 Base64」。
+            var candidates = [
+                [window.pako.ungzip, 'gzip'],
+                [window.pako.inflate, 'zlib'],
+                [window.pako.inflateRaw, 'deflate']
+            ];
             var inflated = null;
             var format = null;
+            for (var i = 0; i < candidates.length; i++) {
+                var out = tryInflate(candidates[i][0], bytes);
+                if (out && decodeUtf8(out) !== null) {
+                    inflated = out;
+                    format = candidates[i][1];
+                    break;
+                }
+            }
 
-            if (isGzip(bytes)) {
-                inflated = tryInflate(window.pako.ungzip, bytes);
-                if (!inflated) {
+            // 都不是压缩流：字节本身是合法 UTF-8 文本，则按「仅 Base64」处理
+            if (!inflated) {
+                if (decodeUtf8(bytes) !== null) {
+                    inflated = bytes;
+                    format = 'plain';
+                } else {
                     throw new Error(E_UNKNOWN);
-                }
-                format = 'gzip';
-            } else if (isZlibHeader(bytes)) {
-                inflated = tryInflate(window.pako.inflate, bytes);
-                if (!inflated) {
-                    throw new Error(E_UNKNOWN);
-                }
-                format = 'zlib';
-            } else {
-                // 非标准头部：依次尝试 gzip / zlib / raw deflate，且结果须为合法 UTF-8
-                var candidates = [
-                    [window.pako.ungzip, 'gzip'],
-                    [window.pako.inflate, 'zlib'],
-                    [window.pako.inflateRaw, 'deflate']
-                ];
-                for (var i = 0; i < candidates.length; i++) {
-                    var out = tryInflate(candidates[i][0], bytes);
-                    if (out && decodeUtf8(out) !== null) {
-                        inflated = out;
-                        format = candidates[i][1];
-                        break;
-                    }
-                }
-                // 都不是压缩流：字节本身是合法 UTF-8 文本，则按「仅 Base64」处理
-                if (!inflated) {
-                    var plain = decodeUtf8(bytes);
-                    if (plain !== null) {
-                        inflated = bytes;
-                        format = 'plain';
-                    } else {
-                        throw new Error(E_UNKNOWN);
-                    }
                 }
             }
 
@@ -550,8 +526,11 @@
             document.body.appendChild(ta);
             ta.select();
             try {
-                document.execCommand('copy');
-                done();
+                if (document.execCommand('copy')) {
+                    done();
+                } else {
+                    renderError('复制失败，请手动选择文本复制。');
+                }
             } catch (e) {
                 renderError('复制失败，请手动选择文本复制。');
             }
