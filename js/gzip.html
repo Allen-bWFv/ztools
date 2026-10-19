@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64/Gzip 解压工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            font-family: 'Courier New', Consolas, monospace;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        button {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        button.secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .result-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .result-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #ece8fb;
+            color: #5b4bb0;
+        }
+
+        .badge-idle {
+            background: #eee;
+            color: #888;
+        }
+
+        .badge-gzip,
+        .badge-zlib,
+        .badge-deflate {
+            background: #e3f1ff;
+            color: #1d63b8;
+        }
+
+        .badge-plain {
+            background: #f1f1f1;
+            color: #666;
+        }
+
+        .badge-error {
+            background: #fdecec;
+            color: #c0392b;
+        }
+
+        #metaInfo {
+            font-size: 0.82rem;
+            color: #777;
+            font-family: 'Courier New', Consolas, monospace;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .result-actions button {
+            padding: 7px 16px;
+            font-size: 0.85rem;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            background: #f8f9fa;
+            border: 1px solid #ececec;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            max-height: 480px;
+            overflow: auto;
+        }
+
+        pre.error {
+            background: #fdecec;
+            border: 1px solid #f5c6c6;
+            border-left: 4px solid #c0392b;
+        }
+
+        code {
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #2b2f38;
+            white-space: pre;
+        }
+
+        code:empty::before {
+            content: '解压结果将显示在这里…';
+            color: #999;
+        }
+
+        .tok-key { color: #7c3aed; }
+        .tok-string { color: #15803d; }
+        .tok-number { color: #c2410c; }
+        .tok-bool { color: #dc2626; }
+        .tok-null { color: #6b7280; }
+
+        pre.error code {
+            color: #c0392b;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 16px 12px; }
+            .card { padding: 20px 14px; }
+            .result-bar { align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Base64/Gzip 解压工具箱</h1>
+
+        <div class="card">
+            <div class="card-title">输入压缩文本</div>
+            <textarea id="input" rows="6"
+                placeholder="粘贴 Base64 文本（支持 gzip / zlib / deflate，或仅 Base64 的纯文本），粘贴后自动解压"></textarea>
+            <div class="button-row">
+                <button id="decodeBtn">解压</button>
+                <button id="clearBtn" class="secondary">清空</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">解压结果</div>
+            <div class="result-bar">
+                <div class="result-status">
+                    <span id="statusBadge" class="badge badge-idle">待解压</span>
+                    <span id="metaInfo"></span>
+                </div>
+                <div class="result-actions">
+                    <button id="copyBtn" class="secondary" disabled>复制</button>
+                    <button id="downloadBtn" class="secondary" disabled>下载</button>
+                </div>
+            </div>
+            <pre id="resultPre"><code id="resultCode"></code></pre>
+        </div>
+    </div>
+
+    <script>
+        var E_BASE64 = 'BASE64_ERROR';
+        var E_UNKNOWN = 'UNKNOWN_ERROR';
+
+        var input = document.getElementById('input');
+        var resultPre = document.getElementById('resultPre');
+        var resultCode = document.getElementById('resultCode');
+        var statusBadge = document.getElementById('statusBadge');
+        var metaInfo = document.getElementById('metaInfo');
+        var copyBtn = document.getElementById('copyBtn');
+        var downloadBtn = document.getElementById('downloadBtn');
+        var decodeBtn = document.getElementById('decodeBtn');
+        var clearBtn = document.getElementById('clearBtn');
+
+        var lastResult = null;
+        var debounceTimer = null;
+
+        var FORMAT_LABELS = {
+            gzip: 'gzip',
+            zlib: 'zlib',
+            deflate: 'deflate',
+            plain: '仅 Base64'
+        };
+
+        // 规整输入并把 Base64 解码为字节；非法时抛错（atob 抛异常）
+        function base64ToBytes(b64) {
+            var s = b64.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+            while (s.length % 4 !== 0) {
+                s += '=';
+            }
+            var binary = atob(s);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i) & 0xff;
+            }
+            return bytes;
+        }
+
+        // fatal UTF-8 解码；非法 UTF-8 返回 null
+        function decodeUtf8(bytes) {
+            try {
+                return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function isGzip(bytes) {
+            return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+        }
+
+        // zlib 头：CMF 低 4 位为 8（deflate），且 (CMF*256+FLG) 能被 31 整除
+        function isZlibHeader(bytes) {
+            return bytes.length >= 2 &&
+                (bytes[0] & 0x0f) === 8 &&
+                (((bytes[0] << 8) | bytes[1]) % 31) === 0;
+        }
+
+        // 调用一种 pako 解压方式，失败返回 null
+        function tryInflate(method, bytes) {
+            try {
+                return method(bytes);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // 纯函数流水线：返回 { text, displayText, isJson, format, compressedBytes, outputBytes }
+        // 空输入返回 null；失败抛 Error(E_BASE64 / E_UNKNOWN)
+        function decode(raw) {
+            if (!raw || !raw.trim()) {
+                return null;
+            }
+
+            var bytes;
+            try {
+                bytes = base64ToBytes(raw);
+            } catch (e) {
+                throw new Error(E_BASE64);
+            }
+
+            var inflated = null;
+            var format = null;
+
+            if (isGzip(bytes)) {
+                inflated = tryInflate(window.pako.ungzip, bytes);
+                if (!inflated) {
+                    throw new Error(E_UNKNOWN);
+                }
+                format = 'gzip';
+            } else if (isZlibHeader(bytes)) {
+                inflated = tryInflate(window.pako.inflate, bytes);
+                if (!inflated) {
+                    throw new Error(E_UNKNOWN);
+                }
+                format = 'zlib';
+            } else {
+                // 非标准头部：依次尝试 gzip / zlib / raw deflate，且结果须为合法 UTF-8
+                var candidates = [
+                    [window.pako.ungzip, 'gzip'],
+                    [window.pako.inflate, 'zlib'],
+                    [window.pako.inflateRaw, 'deflate']
+                ];
+                for (var i = 0; i < candidates.length; i++) {
+                    var out = tryInflate(candidates[i][0], bytes);
+                    if (out && decodeUtf8(out) !== null) {
+                        inflated = out;
+                        format = candidates[i][1];
+                        break;
+                    }
+                }
+                // 都不是压缩流：字节本身是合法 UTF-8 文本，则按「仅 Base64」处理
+                if (!inflated) {
+                    var plain = decodeUtf8(bytes);
+                    if (plain !== null) {
+                        inflated = bytes;
+                        format = 'plain';
+                    } else {
+                        throw new Error(E_UNKNOWN);
+                    }
+                }
+            }
+
+            var text = decodeUtf8(inflated);
+            if (text === null) {
+                throw new Error(E_UNKNOWN);
+            }
+
+            var isJson = false;
+            var displayText = text;
+            try {
+                var obj = JSON.parse(text);
+                if (obj !== null && typeof obj === 'object') {
+                    isJson = true;
+                    displayText = JSON.stringify(obj, null, 2);
+                }
+            } catch (e) {
+                isJson = false;
+            }
+
+            return {
+                text: text,
+                displayText: displayText,
+                isJson: isJson,
+                format: format,
+                compressedBytes: bytes.length,
+                outputBytes: new TextEncoder().encode(text).length
+            };
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/[&<>]/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+            });
+        }
+
+        // 先转义再单次替换着色，避免字符串内部被二次匹配，杜绝 XSS
+        function highlightJson(json) {
+            return escapeHtml(json).replace(
+                /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
+                function (match, str, colon) {
+                    if (str !== undefined) {
+                        return colon
+                            ? '<span class="tok-key">' + str + '</span>' + colon
+                            : '<span class="tok-string">' + str + '</span>';
+                    }
+                    if (match === 'true' || match === 'false') {
+                        return '<span class="tok-bool">' + match + '</span>';
+                    }
+                    if (match === 'null') {
+                        return '<span class="tok-null">null</span>';
+                    }
+                    return '<span class="tok-number">' + match + '</span>';
+                }
+            );
+        }
+
+        function resetOutput() {
+            lastResult = null;
+            resultPre.classList.remove('error');
+            resultCode.textContent = '';
+            metaInfo.textContent = '';
+            statusBadge.textContent = '待解压';
+            statusBadge.className = 'badge badge-idle';
+            copyBtn.disabled = true;
+            downloadBtn.disabled = true;
+        }
+
+        function renderError(message) {
+            lastResult = null;
+            resultPre.classList.add('error');
+            resultCode.textContent = message;
+            metaInfo.textContent = '';
+            statusBadge.textContent = '错误';
+            statusBadge.className = 'badge badge-error';
+            copyBtn.disabled = true;
+            downloadBtn.disabled = true;
+        }
+
+        function renderResult(r) {
+            lastResult = r;
+            resultPre.classList.remove('error');
+            resultCode.innerHTML = r.isJson ? highlightJson(r.displayText) : escapeHtml(r.displayText);
+
+            statusBadge.textContent = FORMAT_LABELS[r.format];
+            statusBadge.className = 'badge badge-' + r.format;
+
+            var meta = '压缩后 ' + r.compressedBytes + ' 字节 → 解压后 ' + r.outputBytes + ' 字节';
+            if (r.format !== 'plain' && r.outputBytes > 0) {
+                var ratio = (1 - r.compressedBytes / r.outputBytes) * 100;
+                meta += ' · 压缩率 ' + ratio.toFixed(1) + '%';
+            }
+            metaInfo.textContent = meta;
+
+            copyBtn.disabled = false;
+            downloadBtn.disabled = false;
+        }
+
+        function runDecode() {
+            if (!window.pako) {
+                renderError('解压库（pako）加载失败，请检查网络后刷新页面。');
+                return;
+            }
+            var value = input.value;
+            if (!value.trim()) {
+                resetOutput();
+                return;
+            }
+            try {
+                var r = decode(value);
+                if (r === null) {
+                    resetOutput();
+                    return;
+                }
+                renderResult(r);
+            } catch (e) {
+                console.warn('decode failed:', e);
+                if (e.message === E_BASE64) {
+                    renderError('Base64 解码失败，请检查输入是否为合法的 Base64 文本。');
+                } else {
+                    renderError('无法识别的压缩格式，或数据已损坏。');
+                }
+            }
+        }
+
+        input.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(runDecode, 300);
+        });
+
+        decodeBtn.addEventListener('click', function () {
+            clearTimeout(debounceTimer);
+            runDecode();
+        });
+
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            clearTimeout(debounceTimer);
+            resetOutput();
+            input.focus();
+        });
+
+        copyBtn.addEventListener('click', function () {
+            if (!lastResult) {
+                return;
+            }
+            var text = lastResult.displayText;
+            var done = function () {
+                var old = copyBtn.textContent;
+                copyBtn.textContent = '已复制 ✓';
+                setTimeout(function () { copyBtn.textContent = old; }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(function () {
+                    fallbackCopy(text, done);
+                });
+            } else {
+                fallbackCopy(text, done);
+            }
+        });
+
+        function fallbackCopy(text, done) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                done();
+            } catch (e) {
+                renderError('复制失败，请手动选择文本复制。');
+            }
+            document.body.removeChild(ta);
+        }
+
+        downloadBtn.addEventListener('click', function () {
+            if (!lastResult) {
+                return;
+            }
+            var isJson = lastResult.isJson;
+            var blob = new Blob([lastResult.displayText], {
+                type: (isJson ? 'application/json' : 'text/plain') + ';charset=utf-8'
+            });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'decode-result.' + (isJson ? 'json' : 'txt');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        });
+
+        // 暴露纯函数供自动化验证
+        window.__decode = decode;
+    </script>
+</body>
+</html>
