@@ -331,17 +331,24 @@
                 throw new Error(E_BASE64);
             }
 
-            // 依次尝试 gzip / zlib / raw deflate；成功要求既能解压、输出又是合法 UTF-8。
-            // 不按魔数硬路由：普通文本（如 "8080"）前两字节可能恰好满足 zlib 头校验，
-            // 硬路由会导致 pako.inflate 抛错后无法回退到「仅 Base64」。
+            // 候选顺序即格式判定顺序：gzip 候选先按魔数 1f 8b 命中——因为 pako 的 ungzip
+            // 实际是 inflate 的别名（按头部自动识别 gzip/zlib），不先卡魔数会把 zlib 误标为 gzip。
+            // 每个候选都要求「能解压且输出为合法 UTF-8」才算成功；失败则继续尝试下一个，
+            // 普通文本（如 "8080"，字节 38 30 恰好通过旧的 zlib 头算式）因此能回退到「仅 Base64」。
             var candidates = [
-                [window.pako.ungzip, 'gzip'],
-                [window.pako.inflate, 'zlib'],
-                [window.pako.inflateRaw, 'deflate']
+                [window.pako.ungzip, 'gzip', function (b) {
+                    return b.length >= 2 && b[0] === 0x1f && b[1] === 0x8b;
+                }],
+                [window.pako.inflate, 'zlib', null],
+                [window.pako.inflateRaw, 'deflate', null]
             ];
             var inflated = null;
             var format = null;
             for (var i = 0; i < candidates.length; i++) {
+                var guard = candidates[i][2];
+                if (guard && !guard(bytes)) {
+                    continue;
+                }
                 var out = tryInflate(candidates[i][0], bytes);
                 if (out && decodeUtf8(out) !== null) {
                     inflated = out;
